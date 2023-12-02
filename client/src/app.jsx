@@ -8,7 +8,6 @@ function App(){
 
     return(
         <div>
-            {console.log("Test")}
             <Router>
                 <Routes>    
                     <Route path="/" element={ <Landingpage/> }/>

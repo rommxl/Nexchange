@@ -8,6 +8,7 @@ function InputArea(){
 
     const [prediction,setPrediction] = useState({'price':['abc']})
     const [resultStatus,setResultStatus] = useState("none")
+    const [convToFrom,setConvToFrom] = useState(['',''])
 
     function fetchprediction(event){
         const from = event.target[0].value;
@@ -22,6 +23,7 @@ function InputArea(){
             // console.log(response.data);
             setPrediction(response.data);
             setResultStatus("flex");
+            setConvToFrom([response.data.conv_from,response.data.conv_to])
         });
         
         event.preventDefault();
@@ -53,7 +55,21 @@ function InputArea(){
                     </form>
                 </div>  
             </div>
-            <ResultSection prices={prediction['price']} status={resultStatus}/>
+            <div className="hori-centre">
+                <div className="flex-column">
+                    <div className="hori-centre">
+                        <h1 style={{textAlign:"center", display:resultStatus, maxWidth:"max-content"}}>Next 10 weeks prediction</h1>
+                    </div>
+                    <ResultSection 
+                            prices={prediction['price']} 
+                            lastDate={prediction['last_date']} 
+                            status={resultStatus}
+                            convFrom={prediction['conv_from']}
+                            convTo={prediction['conv_to']}
+                            pred_len={prediction['pred_len']}
+                        />
+                </div>
+            </div>
         </div>
     )
 }
