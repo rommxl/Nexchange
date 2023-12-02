@@ -14,18 +14,21 @@ base = "https://api.frankfurter.app/1999-01-01..?amount=1&from="
 def fetch_data(request):
     if(request.method == 'POST'):
         json_data = json.loads(request.body.decode('utf-8'))
-        print(json_data)
+        # print(json_data)
         conv_from = json_data['from']
         conv_to = json_data['to']
+
         api = '{}{}&to={}'.format(base,conv_from,conv_to)
         res = requests.get(api)
         json_data = json.loads(res.text)
         data = json_data['rates']
         rates = []
+
         for i in data:
             rates.append(json_data['rates'][i][conv_to])
         data = pd.DataFrame({'rates':rates})
         data.to_csv('data.csv')
+
         return data
         # return (np.array(rates))
         # return HttpResponse(rates)
@@ -39,9 +42,11 @@ def predict(request):
     split = (int(len(df) *1))
     data = df.iloc[0:split]
     data = np.array(data['rates'])
+
     data = data.reshape(-1,1)
     scaler = MinMaxScaler(feature_range=(0,1))
     train = scaler.fit_transform(data)
+    
     xtrain = []
     ytrain = []
     #time step of var days
