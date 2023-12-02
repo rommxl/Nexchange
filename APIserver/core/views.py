@@ -1,5 +1,5 @@
 from sklearn.preprocessing import MinMaxScaler
-from keras.layers import Dense,SimpleRNN,Dropout
+from keras.layers import Dense,SimpleRNN,LSTM,Dropout
 from keras.models import Sequential
 from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
@@ -23,21 +23,22 @@ def fetch_data(request):
         json_data = json.loads(res.text)
         data = json_data['rates']
         rates = []
-
+        final_date = ""
         for i in data:
             rates.append(json_data['rates'][i][conv_to])
+            final_date = i
         data = pd.DataFrame({'rates':rates})
         data.to_csv('data.csv')
 
-        return data
+        return data,final_date,conv_from,conv_to
         # return (np.array(rates))
         # return HttpResponse(rates)
 
 def predict(request):
-    df = fetch_data(request)
-    timestep = 40
+    df,last_date,conv_from,conv_to = fetch_data(request)
+    timestep = 365
     future_days = 10
-    epochs = 15                 #timesteps  
+    epochs = 10                 #timesteps  
 
     split = (int(len(df) *1))
     data = df.iloc[0:split]
@@ -57,7 +58,7 @@ def predict(request):
     xtrain = xtrain.reshape(xtrain.shape[0],xtrain.shape[1],1)
 
     model = Sequential()
-    model.add(SimpleRNN(100,input_shape = (xtrain.shape[1],1)))
+    model.add(SimpleRNN(120,input_shape = (xtrain.shape[1],1)))
     # model.add(SimpleRNN(20))
     # model.add(SimpleRNN(75,input_shape = (xtrain.shape[1],1)))
     # model.add(Dropout(0.2))
@@ -66,7 +67,7 @@ def predict(request):
     model.fit(xtrain,ytrain,epochs=epochs)
 
     inputs = df[len(df)-timestep:].values
-    result_array = []
+    result_array = [str(data[-1][0])]
     for i in range(0,future_days):
         inputs = inputs[-1 * timestep:]
         inputs = inputs.reshape(-1,1)
@@ -82,7 +83,13 @@ def predict(request):
         inputs = scaler.inverse_transform(inputs)
         inputs = np.append(inputs,predicted_price[0][0],axis=None)          #axis = none as it is reshaped at start of loop
     # response = {"price":float(predicted_price[0][0])}
-    response = {"price":result_array}
+    response = {
+        "price":result_array,
+        "last_date":last_date,
+        "conv_from":conv_from,
+        "conv_to":conv_to,
+        "pred_len":future_days,
+        }
     # response = json.dumps({"price":list(result_array)})
     # print(response)
     return JsonResponse(response)
