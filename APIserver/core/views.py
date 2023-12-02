@@ -1,5 +1,5 @@
 from sklearn.preprocessing import MinMaxScaler
-from keras.layers import Dense,SimpleRNN,LSTM,Dropout
+from keras.layers import Dense,Dropout,SimpleRNN,LSTM,GRU
 from keras.models import Sequential
 from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
@@ -38,7 +38,7 @@ def predict(request):
     df,last_date,conv_from,conv_to = fetch_data(request)
     timestep = 365
     future_days = 10
-    epochs = 10                 #timesteps  
+    epochs = 20                 #timesteps  
 
     split = (int(len(df) *1))
     data = df.iloc[0:split]
@@ -58,7 +58,7 @@ def predict(request):
     xtrain = xtrain.reshape(xtrain.shape[0],xtrain.shape[1],1)
 
     model = Sequential()
-    model.add(SimpleRNN(120,input_shape = (xtrain.shape[1],1)))
+    model.add(SimpleRNN(100,input_shape = (xtrain.shape[1],1)))
     # model.add(SimpleRNN(20))
     # model.add(SimpleRNN(75,input_shape = (xtrain.shape[1],1)))
     # model.add(Dropout(0.2))
