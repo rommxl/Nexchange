@@ -1,0 +1,7 @@
+data.csv
+predictor.py
+train.ipynb
+node server/node_modules
+client/node_modules
+client/.gitignore
+node server
